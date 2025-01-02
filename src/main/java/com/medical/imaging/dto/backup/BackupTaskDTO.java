@@ -2,14 +2,11 @@ package com.medical.imaging.dto.backup;
 
 import com.medical.imaging.enums.BackupStatus;
 import com.medical.imaging.enums.BackupType;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
 @Builder
 public class BackupTaskDTO {

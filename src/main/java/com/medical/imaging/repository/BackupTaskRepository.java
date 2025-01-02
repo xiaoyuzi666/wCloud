@@ -14,8 +14,6 @@ import java.util.Map;
 @Repository
 public interface BackupTaskRepository extends JpaRepository<BackupTask, String> {
     
-    long countByStatus(BackupStatus status);
-
     @Query("SELECT COUNT(b) FROM BackupTask b WHERE b.status = :status")
     long countByStatus(BackupStatus status);
 

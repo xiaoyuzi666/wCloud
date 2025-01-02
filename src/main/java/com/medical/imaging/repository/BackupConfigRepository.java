@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface BackupConfigRepository extends JpaRepository<BackupConfig, Long> {
     
-    @Query("SELECT c FROM BackupConfig c ORDER BY c.id DESC LIMIT 1")
+    @Query("SELECT b FROM BackupConfig b ORDER BY b.id DESC LIMIT 1")
     Optional<BackupConfig> findCurrentConfig();
 } 

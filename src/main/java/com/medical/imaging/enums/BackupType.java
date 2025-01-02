@@ -4,6 +4,6 @@ public enum BackupType {
     FULL,
     INCREMENTAL,
     DIFFERENTIAL,
-    DATABASE_ONLY,
-    FILES_ONLY
+    DATABASE,
+    FILES
 } 
