@@ -1,3 +1,5 @@
+package com.medical.imaging.dto.backup;
+
 import com.medical.imaging.enums.BackupType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

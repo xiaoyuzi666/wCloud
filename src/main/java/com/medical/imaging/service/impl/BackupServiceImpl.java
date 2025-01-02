@@ -8,6 +8,7 @@ import com.medical.imaging.enums.BackupType;
 import com.medical.imaging.repository.BackupTaskRepository;
 import com.medical.imaging.repository.BackupConfigRepository;
 import com.medical.imaging.service.BackupService;
+import com.medical.imaging.service.BackupTaskExecutor;
 import com.medical.imaging.service.EmailService;
 import com.medical.imaging.service.SystemConfigService;
 import com.medical.imaging.exception.ResourceNotFoundException;

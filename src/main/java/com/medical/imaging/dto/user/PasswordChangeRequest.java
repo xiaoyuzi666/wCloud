@@ -1,3 +1,5 @@
+package com.medical.imaging.dto.user;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;

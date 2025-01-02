@@ -1,9 +1,11 @@
 package com.medical.imaging.service.impl;
 
 import com.medical.imaging.dto.*;
+import com.medical.imaging.model.User;
 import com.medical.imaging.service.AuthService;
 import com.medical.imaging.security.JwtUtil;
 import com.medical.imaging.repository.UserRepository;
+import com.medical.imaging.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
