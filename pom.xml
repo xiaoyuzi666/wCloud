@@ -10,6 +10,7 @@
         <version>3.2.0</version>
     </parent>
 
+
     <groupId>com.medical</groupId>
     <artifactId>medical-imaging</artifactId>
     <version>1.0-SNAPSHOT</version>
