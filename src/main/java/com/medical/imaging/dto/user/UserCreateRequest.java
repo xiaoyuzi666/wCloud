@@ -1,26 +1,27 @@
 package com.medical.imaging.dto.user;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+
 import java.util.Set;
 
 @Data
 public class UserCreateRequest {
-    @NotBlank
-    @Size(min = 4, max = 50)
+    @NotBlank(message = "Username cannot be empty")
+    @Size(min = 3, max = 50)
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "Password cannot be empty")
     @Size(min = 6, max = 100)
     private String password;
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
     private String email;
-    
-    private String phone;
+
+    private String name;
     private String department;
     private Set<String> roles;
 } 

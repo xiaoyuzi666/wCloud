@@ -1,6 +1,7 @@
 package com.medical.imaging.controller;
 
-
+import com.medical.imaging.dto.config.SystemConfigDTO;
+import com.medical.imaging.dto.config.SystemConfigRequest;
 import com.medical.imaging.service.SystemConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,11 +11,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/config")
@@ -51,10 +56,9 @@ public class SystemConfigController {
     public ResponseEntity<Void> setConfigValue(
         @Parameter(description = "Configuration key")
         @PathVariable String key,
-        @Parameter(description = "Configuration value")
-        @RequestBody String value
+        @Valid @RequestBody SystemConfigRequest request
     ) {
-        configService.setConfigValue(key, value);
+        configService.setConfigValue(key, request.getValue());
         return ResponseEntity.ok().build();
     }
 
@@ -67,5 +71,17 @@ public class SystemConfigController {
     public ResponseEntity<Void> initializeDefaultConfigs() {
         configService.initializeDefaultConfigs();
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<SystemConfigDTO>> getAllConfigs(Pageable pageable) {
+        return ResponseEntity.ok(configService.getAllConfigs(pageable));
+    }
+
+    @GetMapping("/category/{category}")
+    public ResponseEntity<Map<String, String>> getConfigsByCategory(
+        @PathVariable String category
+    ) {
+        return ResponseEntity.ok(configService.getConfigsByCategory(category));
     }
 } 

@@ -6,13 +6,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface ReportService {
     ReportDTO generateReport(ReportGenerateRequest request);
+    ReportDTO updateReport(Long reportId, ReportUpdateRequest request);
+    void deleteReport(Long reportId);
     ReportDTO getReport(Long reportId);
     Page<ReportDTO> getReportsByStudy(Long studyId, Pageable pageable);
-    void deleteReport(Long reportId);
-    ReportDTO updateReport(Long reportId, ReportUpdateRequest request);
-    byte[] exportReportAsPdf(Long reportId);
     ReportTemplateDTO createTemplate(ReportTemplateRequest request);
     ReportTemplateDTO updateTemplate(Long templateId, ReportTemplateRequest request);
     void deleteTemplate(Long templateId);
-    Page<ReportTemplateDTO> getTemplates(Pageable pageable);
+    ReportTemplateDTO getTemplate(Long templateId);
+    Page<ReportTemplateDTO> getAllTemplates(Pageable pageable);
 } 

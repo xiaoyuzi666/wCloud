@@ -1,6 +1,6 @@
 package com.medical.imaging.controller;
 
-import com.medical.imaging.model.Study;
+import com.medical.imaging.dto.study.*;
 import com.medical.imaging.service.StudyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,7 +24,7 @@ public class StudyController {
 
     @Operation(summary = "搜索检查", description = "支持多条件搜索和分页")
     @GetMapping
-    public ResponseEntity<Page<Study>> searchStudies(
+    public ResponseEntity<Page<StudyDTO>> searchStudies(
             @Parameter(description = "患者姓名") 
             @RequestParam(required = false) String patientName,
             @Parameter(description = "患者ID") 
@@ -36,11 +36,16 @@ public class StudyController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
                 LocalDateTime endDate,
             Pageable pageable) {
-        return ResponseEntity.ok(studyService.searchStudies(patientName, patientId, startDate, endDate, pageable));
+        StudySearchRequest request = new StudySearchRequest();
+        request.setPatientName(patientName);
+        request.setPatientId(patientId);
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+        return ResponseEntity.ok(studyService.searchStudies(request, pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Study> getStudy(@PathVariable Long id) {
+    public ResponseEntity<StudyDTO> getStudy(@PathVariable Long id) {
         return ResponseEntity.ok(studyService.getStudy(id));
     }
 
@@ -51,12 +56,14 @@ public class StudyController {
     }
 
     @GetMapping("/{id}/series")
-    public ResponseEntity<?> getStudySeries(@PathVariable Long id) {
-        return ResponseEntity.ok(studyService.getStudySeries(id));
+    public ResponseEntity<Page<SeriesDTO>> getStudySeries(
+            @PathVariable Long id,
+            Pageable pageable) {
+        return ResponseEntity.ok(studyService.getStudySeries(id, pageable));
     }
 
     @GetMapping("/statistics")
-    public ResponseEntity<?> getStudyStatistics(
+    public ResponseEntity<StudyStatisticsDTO> getStudyStatistics(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
                 LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 

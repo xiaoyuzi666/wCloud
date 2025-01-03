@@ -1,14 +1,16 @@
 package com.medical.imaging.dto.report;
 
 import lombok.Data;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class ReportGenerateRequest {
-    @NotNull
+    @NotNull(message = "Study ID cannot be null")
     private Long studyId;
-    @NotNull
+    
+    @NotNull(message = "Template ID cannot be null")
     private Long templateId;
+    
     private String title;
     private String content;
     private String conclusion;

@@ -2,29 +2,29 @@ package com.medical.imaging.service.impl;
 
 import com.medical.imaging.config.OrthancConfig;
 import com.medical.imaging.service.ImageProcessingService;
+import com.medical.imaging.util.DicomImageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.io.DicomInputStream;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import com.medical.imaging.util.DicomImageUtil;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.io.DicomInputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageProcessingServiceImpl implements ImageProcessingService {
@@ -196,7 +196,7 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
             height = Math.max(height, slice.getHeight());
         }
         
-        // 创建矢状面���建图像
+        // 创建矢状面重建图像
         if (sliceIndex >= 0 && sliceIndex < height) {
             BufferedImage sagittalView = new BufferedImage(width, slices.size(), BufferedImage.TYPE_INT_RGB);
             

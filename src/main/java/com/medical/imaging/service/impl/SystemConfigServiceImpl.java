@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -18,10 +19,10 @@ import java.util.Map;
 public class SystemConfigServiceImpl implements SystemConfigService {
 
     private final SystemConfigRepository configRepository;
-    private final Map<String, String> defaultConfigs;
+    private final Map<String, String> defaultConfigs = new HashMap<>();
 
-    {
-        defaultConfigs = new HashMap<>();
+    @PostConstruct
+    public void init() {
         defaultConfigs.put("backup.directory", "/data/backups");
         defaultConfigs.put("backup.retention.days", "30");
         defaultConfigs.put("backup.max.concurrent.tasks", "3");

@@ -1,10 +1,12 @@
 package com.medical.imaging.controller;
 
-import com.medical.imaging.dto.*;
+import com.medical.imaging.dto.auth.*;
 import com.medical.imaging.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")

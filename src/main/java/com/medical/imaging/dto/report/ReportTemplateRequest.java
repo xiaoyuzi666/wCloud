@@ -1,14 +1,14 @@
 package com.medical.imaging.dto.report;
 
 import lombok.Data;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class ReportTemplateRequest {
-    @NotBlank
+    @NotBlank(message = "Template name cannot be empty")
     private String name;
     private String description;
-    @NotBlank
+    @NotBlank(message = "Template content cannot be empty")
     private String content;
     private String category;
     private boolean isDefault;

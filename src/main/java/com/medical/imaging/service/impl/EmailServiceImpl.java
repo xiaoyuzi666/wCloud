@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import java.util.Map;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import java.io.File;
 
 @Slf4j
 @Service
@@ -40,11 +40,27 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendTemplateEmail(String to, String subject, String template, Map<String, Object> model) {
-        Context context = new Context();
-        context.setVariables(model);
-        
-        String content = templateEngine.process(template, context);
-        sendEmail(to, subject, content);
+    public void sendEmailWithAttachment(String to, String subject, String content, String attachmentPath) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(content, true);
+            
+            File attachment = new File(attachmentPath);
+            if (attachment.exists()) {
+                helper.addAttachment(attachment.getName(), attachment);
+            } else {
+                log.warn("Attachment file not found: {}", attachmentPath);
+            }
+            
+            mailSender.send(message);
+            log.info("Email with attachment sent successfully to: {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send email with attachment to: " + to, e);
+            throw new RuntimeException("Failed to send email with attachment", e);
+        }
     }
 } 

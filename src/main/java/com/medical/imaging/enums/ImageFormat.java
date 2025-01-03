@@ -1,9 +1,10 @@
 package com.medical.imaging.enums;
 
 public enum ImageFormat {
-    DICOM,
     JPEG,
     PNG,
+    TIFF,
     BMP,
-    TIFF
+    DICOM,
+    PDF
 } 

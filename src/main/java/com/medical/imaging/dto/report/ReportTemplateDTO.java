@@ -1,15 +1,11 @@
 package com.medical.imaging.dto.report;
 
-import lombok.Data;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ReportTemplateDTO {
     private Long id;
     private String name;
@@ -20,5 +16,4 @@ public class ReportTemplateDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
-    private String updatedBy;
 } 

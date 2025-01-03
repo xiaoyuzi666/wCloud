@@ -1,8 +1,8 @@
 package com.medical.imaging.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import lombok.Data;
 
 @Data
 @Configuration
@@ -11,4 +11,6 @@ public class OrthancConfig {
     private String serverUrl;
     private String username;
     private String password;
+    private int connectionTimeout;
+    private int readTimeout;
 } 

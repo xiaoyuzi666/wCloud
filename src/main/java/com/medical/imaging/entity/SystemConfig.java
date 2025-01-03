@@ -2,36 +2,34 @@ package com.medical.imaging.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "system_configs")
-@NoArgsConstructor
-@AllArgsConstructor
 public class SystemConfig {
-    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "config_key", unique = true, nullable = false)
+    @Column(name = "config_key")
     private String key;
 
-    @Column(name = "config_value")
+    @Column(name = "config_value", nullable = false)
     private String value;
 
-    @Column(name = "description")
     private String description;
+    
+    private String category;
+    
+    private Boolean encrypted;
 
     @Column(name = "created_at")
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @Column(name = "created_by")
@@ -39,15 +37,4 @@ public class SystemConfig {
 
     @Column(name = "updated_by")
     private String updatedBy;
-
-    public SystemConfig(String key) {
-        this.key = key;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 } 

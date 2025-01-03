@@ -1,13 +1,13 @@
 package com.medical.imaging.dto.image;
 
 import lombok.Data;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class ContrastAdjustRequest {
-    @NotNull
+    @NotNull(message = "Contrast value cannot be null")
     private Double contrast;
-    @NotNull
+    @NotNull(message = "Brightness value cannot be null")
     private Double brightness;
     private Boolean applyToSeries;
 } 
