@@ -3,6 +3,8 @@ package com.medical.imaging.dto.image;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class UploadProgress {

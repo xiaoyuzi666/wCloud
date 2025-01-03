@@ -1,6 +1,5 @@
 package com.medical.imaging.dto.backup;
 
-import com.medical.imaging.enums.BackupStatus;
 import lombok.Builder;
 import lombok.Data;
 
