@@ -13,9 +13,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -89,10 +91,26 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public StudyStatisticsDTO getStatistics(LocalDateTime startDate, LocalDateTime endDate) {
+        List<DailyStudyCount> dailyCounts = studyRepository.getDailyStudyCount(startDate, endDate)
+            .stream()
+            .map(result -> new DailyStudyCount(
+                ((java.sql.Date) result[0]).toLocalDate(),
+                (Long) result[1]
+            ))
+            .collect(Collectors.toList());
+
+        List<PatientStudyCount> patientCounts = studyRepository.getStudyCountByPatient(startDate, endDate)
+            .stream()
+            .map(result -> new PatientStudyCount(
+                (String) result[0],
+                (Long) result[1]
+            ))
+            .collect(Collectors.toList());
+
         return StudyStatisticsDTO.builder()
             .totalStudies(studyRepository.countByStudyDateBetween(startDate, endDate))
-            .studiesByDay(studyRepository.getDailyStudyCount(startDate, endDate))
-            .studiesByPatient(studyRepository.getStudyCountByPatient(startDate, endDate))
+            .studiesByDay(dailyCounts)
+            .studiesByPatient(patientCounts)
             .build();
     }
 

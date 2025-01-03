@@ -1,9 +1,9 @@
 package com.medical.imaging.service.impl;
 
 import com.medical.imaging.entity.SystemConfig;
+import com.medical.imaging.exception.BusinessException;
 import com.medical.imaging.repository.SystemConfigRepository;
 import com.medical.imaging.service.SystemConfigService;
-import com.medical.imaging.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
-import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -19,56 +18,57 @@ import jakarta.annotation.PostConstruct;
 public class SystemConfigServiceImpl implements SystemConfigService {
 
     private final SystemConfigRepository configRepository;
-    private final Map<String, String> defaultConfigs = new HashMap<>();
-
-    @PostConstruct
-    public void init() {
-        defaultConfigs.put("backup.directory", "/data/backups");
-        defaultConfigs.put("backup.retention.days", "30");
-        defaultConfigs.put("backup.max.concurrent.tasks", "3");
-        defaultConfigs.put("email.admin", "admin@example.com");
-        defaultConfigs.put("db.name", "medical_imaging");
-    }
 
     @Override
-    public String getConfigValue(String key) {
-        return configRepository.findByKey(key)
+    public String getConfig(String key) {
+        return configRepository.findById(key)
             .map(SystemConfig::getValue)
-            .orElseThrow(() -> new BusinessException("Configuration not found: " + key));
+            .orElseThrow(() -> new BusinessException("Config not found: " + key));
     }
 
     @Override
     @Transactional
-    public void setConfigValue(String key, String value) {
+    public void setConfig(String key, String value) {
         validateConfig(key, value);
-        SystemConfig config = configRepository.findByKey(key)
-            .orElse(new SystemConfig(key));
+        
+        SystemConfig config = configRepository.findById(key)
+            .orElseGet(() -> {
+                SystemConfig newConfig = new SystemConfig();
+                newConfig.setKey(key);
+                return newConfig;
+            });
+        
         config.setValue(value);
         configRepository.save(config);
-        log.info("System configuration updated - key: {}, value: {}", key, value);
     }
 
     @Override
-    public boolean hasConfig(String key) {
-        return configRepository.existsByKey(key);
+    public Map<String, String> getAllConfigs() {
+        Map<String, String> configs = new HashMap<>();
+        configRepository.findAll().forEach(config -> 
+            configs.put(config.getKey(), config.getValue())
+        );
+        return configs;
     }
 
     @Override
     public void validateConfig(String key, String value) {
-        // 实现配置验证逻辑
-        if (value == null || value.trim().isEmpty()) {
-            throw new BusinessException("Configuration value cannot be empty");
+        if (key == null || key.trim().isEmpty()) {
+            throw new BusinessException("Config key cannot be empty");
+        }
+        if (value == null) {
+            throw new BusinessException("Config value cannot be null");
         }
 
         switch (key) {
-            case "backup.retention.days":
-                validateNumericConfig(value, 1, 365);
+            case "storage.path":
+                validateStoragePath(value);
                 break;
-            case "backup.max.concurrent.tasks":
-                validateNumericConfig(value, 1, 10);
+            case "dicom.aet":
+                validateAETitle(value);
                 break;
-            case "email.admin":
-                validateEmailConfig(value);
+            case "email.enabled":
+                validateBoolean(value);
                 break;
             // 添加其他配置项的验证
         }
@@ -76,30 +76,80 @@ public class SystemConfigServiceImpl implements SystemConfigService {
 
     @Override
     @Transactional
-    public void initializeDefaultConfigs() {
-        defaultConfigs.forEach((key, value) -> {
-            if (!hasConfig(key)) {
-                setConfigValue(key, value);
-                log.info("Initialized default configuration - key: {}, value: {}", key, value);
-            }
-        });
+    public void initDefaultConfigs() {
+        setDefaultConfig("storage.path", "/data/medical-imaging");
+        setDefaultConfig("dicom.aet", "MEDICAL_IMAGING");
+        setDefaultConfig("dicom.port", "11112");
+        setDefaultConfig("email.enabled", "false");
+        setDefaultConfig("email.smtp.host", "smtp.example.com");
+        setDefaultConfig("email.smtp.port", "587");
+        setDefaultConfig("backup.enabled", "true");
+        setDefaultConfig("backup.schedule", "0 0 2 * * ?");
+        setDefaultConfig("compression.enabled", "true");
+        setDefaultConfig("compression.quality", "0.8");
     }
 
-    private void validateNumericConfig(String value, int min, int max) {
-        try {
-            int numValue = Integer.parseInt(value);
-            if (numValue < min || numValue > max) {
-                throw new BusinessException(
-                    String.format("Value must be between %d and %d", min, max));
-            }
-        } catch (NumberFormatException e) {
-            throw new BusinessException("Value must be a valid number");
+    private void setDefaultConfig(String key, String value) {
+        if (!configRepository.existsById(key)) {
+            SystemConfig config = new SystemConfig();
+            config.setKey(key);
+            config.setValue(value);
+            config.setDescription(getDefaultDescription(key));
+            config.setCategory(getConfigCategory(key));
+            configRepository.save(config);
         }
     }
 
-    private void validateEmailConfig(String value) {
-        if (!value.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new BusinessException("Invalid email format");
+    private void validateStoragePath(String path) {
+        if (path.trim().isEmpty()) {
+            throw new BusinessException("Storage path cannot be empty");
+        }
+        // 可以添加更多的路径验证逻辑
+    }
+
+    private void validateAETitle(String aet) {
+        if (aet.length() > 16) {
+            throw new BusinessException("AE Title cannot be longer than 16 characters");
+        }
+        if (!aet.matches("^[A-Za-z0-9_-]+$")) {
+            throw new BusinessException("AE Title can only contain letters, numbers, underscore and hyphen");
+        }
+    }
+
+    private void validateBoolean(String value) {
+        if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+            throw new BusinessException("Value must be 'true' or 'false'");
+        }
+    }
+
+    private String getDefaultDescription(String key) {
+        switch (key) {
+            case "storage.path":
+                return "Base storage path for medical images";
+            case "dicom.aet":
+                return "DICOM Application Entity Title";
+            case "dicom.port":
+                return "DICOM service port";
+            case "email.enabled":
+                return "Enable/disable email notifications";
+            default:
+                return "";
+        }
+    }
+
+    private String getConfigCategory(String key) {
+        if (key.startsWith("storage.")) {
+            return "storage";
+        } else if (key.startsWith("dicom.")) {
+            return "dicom";
+        } else if (key.startsWith("email.")) {
+            return "email";
+        } else if (key.startsWith("backup.")) {
+            return "backup";
+        } else if (key.startsWith("compression.")) {
+            return "compression";
+        } else {
+            return "other";
         }
     }
 } 

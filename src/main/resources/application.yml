@@ -22,11 +22,14 @@ app:
     location: ./uploads
 
 orthanc:
-  server-url: http://123.57.92.221:8042
+  url: http://localhost:8042
   username: orthanc
   password: orthanc
+  max-connections: 20
   connection-timeout: 5000
   read-timeout: 30000
+  compression: true
+  storage-directory: /path/to/storage
 
 springdoc:
   api-docs:

@@ -1,6 +1,5 @@
 package com.medical.imaging.service;
 
-import com.medical.imaging.entity.SystemConfig;
 import java.util.Map;
 
 public interface SystemConfigService {

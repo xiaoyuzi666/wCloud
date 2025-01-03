@@ -5,11 +5,11 @@ import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class ReportTemplateRequest {
-    @NotBlank(message = "Template name cannot be empty")
+    @NotBlank(message = "Name cannot be empty")
     private String name;
     private String description;
+    private String modality;
     @NotBlank(message = "Template content cannot be empty")
-    private String content;
-    private String category;
-    private boolean isDefault;
+    private String template;
+    private Boolean isDefault;
 } 

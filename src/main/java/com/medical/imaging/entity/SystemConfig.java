@@ -12,24 +12,20 @@ import java.time.LocalDateTime;
 @Table(name = "system_configs")
 public class SystemConfig {
     @Id
-    @Column(name = "config_key")
     private String key;
 
-    @Column(name = "config_value", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String value;
 
     private String description;
-    
     private String category;
-    
-    private Boolean encrypted;
 
-    @Column(name = "created_at")
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "created_by")

@@ -3,10 +3,12 @@ package com.medical.imaging.service.impl;
 import com.medical.imaging.dto.report.*;
 import com.medical.imaging.entity.Report;
 import com.medical.imaging.entity.ReportTemplate;
+import com.medical.imaging.entity.Study;
+import com.medical.imaging.exception.ResourceNotFoundException;
 import com.medical.imaging.repository.ReportRepository;
 import com.medical.imaging.repository.ReportTemplateRepository;
+import com.medical.imaging.repository.StudyRepository;
 import com.medical.imaging.service.ReportService;
-import com.medical.imaging.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,23 +20,35 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
+    private final StudyRepository studyRepository;
     private final ReportTemplateRepository templateRepository;
 
     @Override
     @Transactional
-    public ReportDTO generateReport(ReportGenerateRequest request) {
+    public ReportDTO createReport(Long studyId, ReportGenerateRequest request) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Study not found"));
+
         ReportTemplate template = templateRepository.findById(request.getTemplateId())
-            .orElseThrow(() -> new ResourceNotFoundException("Report template not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
 
         Report report = new Report();
-        report.setStudyId(request.getStudyId());
-        report.setTitle(request.getTitle());
-        report.setContent(request.getContent() != null ? request.getContent() : template.getContent());
+        report.setStudy(study);
+        report.setContent(request.getContent());
+        report.setFindings(request.getFindings());
         report.setConclusion(request.getConclusion());
+        report.setRecommendation(request.getRecommendation());
         report.setDoctorName(request.getDoctorName());
+        report.setTemplateId(template.getId());
         report.setStatus("DRAFT");
 
-        report = reportRepository.save(report);
+        return convertToDTO(reportRepository.save(report));
+    }
+
+    @Override
+    public ReportDTO getReport(Long reportId) {
+        Report report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
         return convertToDTO(report);
     }
 
@@ -44,41 +58,110 @@ public class ReportServiceImpl implements ReportService {
         Report report = reportRepository.findById(reportId)
             .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
 
-        if (request.getTitle() != null) {
-            report.setTitle(request.getTitle());
-        }
-        if (request.getContent() != null) {
-            report.setContent(request.getContent());
-        }
-        if (request.getConclusion() != null) {
-            report.setConclusion(request.getConclusion());
-        }
-        if (request.getDoctorName() != null) {
-            report.setDoctorName(request.getDoctorName());
-        }
-        if (request.getStatus() != null) {
-            report.setStatus(request.getStatus());
-        }
+        report.setContent(request.getContent());
+        report.setFindings(request.getFindings());
+        report.setConclusion(request.getConclusion());
+        report.setRecommendation(request.getRecommendation());
+        report.setStatus(request.getStatus());
 
-        report = reportRepository.save(report);
-        return convertToDTO(report);
+        return convertToDTO(reportRepository.save(report));
     }
 
-    // ... 其他方法的实现
+    @Override
+    @Transactional
+    public void deleteReport(Long reportId) {
+        if (!reportRepository.existsById(reportId)) {
+            throw new ResourceNotFoundException("Report not found");
+        }
+        reportRepository.deleteById(reportId);
+    }
+
+    @Override
+    public Page<ReportDTO> getStudyReports(Long studyId, Pageable pageable) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Study not found"));
+        return reportRepository.findByStudy(study, pageable)
+            .map(this::convertToDTO);
+    }
+
+    @Override
+    @Transactional
+    public ReportTemplateDTO createTemplate(ReportTemplateRequest request) {
+        ReportTemplate template = new ReportTemplate();
+        template.setName(request.getName());
+        template.setDescription(request.getDescription());
+        template.setModality(request.getModality());
+        template.setTemplate(request.getTemplate());
+        template.setIsDefault(request.getIsDefault());
+
+        return convertToTemplateDTO(templateRepository.save(template));
+    }
+
+    @Override
+    @Transactional
+    public ReportTemplateDTO updateTemplate(Long templateId, ReportTemplateRequest request) {
+        ReportTemplate template = templateRepository.findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+
+        template.setName(request.getName());
+        template.setDescription(request.getDescription());
+        template.setModality(request.getModality());
+        template.setTemplate(request.getTemplate());
+        template.setIsDefault(request.getIsDefault());
+
+        return convertToTemplateDTO(templateRepository.save(template));
+    }
+
+    @Override
+    @Transactional
+    public void deleteTemplate(Long templateId) {
+        if (!templateRepository.existsById(templateId)) {
+            throw new ResourceNotFoundException("Template not found");
+        }
+        templateRepository.deleteById(templateId);
+    }
+
+    @Override
+    public ReportTemplateDTO getTemplate(Long templateId) {
+        ReportTemplate template = templateRepository.findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        return convertToTemplateDTO(template);
+    }
+
+    @Override
+    public Page<ReportTemplateDTO> getAllTemplates(Pageable pageable) {
+        return templateRepository.findAll(pageable)
+            .map(this::convertToTemplateDTO);
+    }
 
     private ReportDTO convertToDTO(Report report) {
         return ReportDTO.builder()
             .id(report.getId())
-            .studyId(report.getStudyId())
-            .title(report.getTitle())
+            .studyId(report.getStudy().getId())
             .content(report.getContent())
-            .conclusion(report.getConclusion())
-            .doctorName(report.getDoctorName())
             .status(report.getStatus())
+            .conclusion(report.getConclusion())
+            .findings(report.getFindings())
+            .recommendation(report.getRecommendation())
+            .doctorName(report.getDoctorName())
+            .templateId(report.getTemplateId())
             .createdAt(report.getCreatedAt())
             .updatedAt(report.getUpdatedAt())
             .createdBy(report.getCreatedBy())
             .updatedBy(report.getUpdatedBy())
+            .build();
+    }
+
+    private ReportTemplateDTO convertToTemplateDTO(ReportTemplate template) {
+        return ReportTemplateDTO.builder()
+            .id(template.getId())
+            .name(template.getName())
+            .description(template.getDescription())
+            .modality(template.getModality())
+            .template(template.getTemplate())
+            .isDefault(template.getIsDefault())
+            .createdAt(template.getCreatedAt())
+            .createdBy(template.getCreatedBy())
             .build();
     }
 } 

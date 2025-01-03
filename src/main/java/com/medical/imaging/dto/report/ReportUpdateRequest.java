@@ -1,13 +1,15 @@
 package com.medical.imaging.dto.report;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import jakarta.validation.constraints.NotNull;
 
 @Data
 public class ReportUpdateRequest {
-    private String title;
+    @NotBlank(message = "Content cannot be empty")
     private String content;
+
+    private String findings;
     private String conclusion;
-    private String doctorName;
+    private String recommendation;
     private String status;
 } 

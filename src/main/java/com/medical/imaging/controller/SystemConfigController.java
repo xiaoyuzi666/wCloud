@@ -1,87 +1,58 @@
 package com.medical.imaging.controller;
 
-import com.medical.imaging.dto.config.SystemConfigDTO;
-import com.medical.imaging.dto.config.SystemConfigRequest;
+import com.medical.imaging.dto.config.*;
 import com.medical.imaging.service.SystemConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-import jakarta.validation.Valid;
-
+@Tag(name = "系统配置", description = "系统配置管理")
 @RestController
-@RequestMapping("/api/v1/config")
+@RequestMapping("/api/system/config")
 @RequiredArgsConstructor
-@Tag(name = "System Configuration", description = "APIs for managing system configurations")
-@SecurityRequirement(name = "JWT")
 public class SystemConfigController {
 
-    private final SystemConfigService configService;
+    private final SystemConfigService systemConfigService;
 
-    @Operation(
-        summary = "Get configuration value",
-        description = "Retrieve the value of a specific configuration key"
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Configuration value retrieved successfully",
-        content = @Content(schema = @Schema(implementation = String.class))
-    )
+    @Operation(summary = "获取配置值", description = "根据配置键获取配置值")
     @GetMapping("/{key}")
-    public ResponseEntity<String> getConfigValue(
-        @Parameter(description = "Configuration key")
-        @PathVariable String key
-    ) {
-        return ResponseEntity.ok(configService.getConfigValue(key));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> getConfig(
+            @Parameter(description = "配置键") 
+            @PathVariable String key) {
+        return ResponseEntity.ok(systemConfigService.getConfig(key));
     }
 
-    @Operation(
-        summary = "Set configuration value",
-        description = "Set or update a configuration value"
-    )
-    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "设置配置值", description = "设置指定键的配置值")
     @PutMapping("/{key}")
-    public ResponseEntity<Void> setConfigValue(
-        @Parameter(description = "Configuration key")
-        @PathVariable String key,
-        @Valid @RequestBody SystemConfigRequest request
-    ) {
-        configService.setConfigValue(key, request.getValue());
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(
-        summary = "Initialize default configurations",
-        description = "Initialize the system with default configuration values"
-    )
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/initialize")
-    public ResponseEntity<Void> initializeDefaultConfigs() {
-        configService.initializeDefaultConfigs();
+    public ResponseEntity<Void> setConfig(
+            @Parameter(description = "配置键") 
+            @PathVariable String key,
+            @Valid @RequestBody ConfigUpdateRequest request) {
+        systemConfigService.setConfig(key, request.getValue());
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "获取所有配置", description = "获取所有系统配置")
     @GetMapping
-    public ResponseEntity<Page<SystemConfigDTO>> getAllConfigs(Pageable pageable) {
-        return ResponseEntity.ok(configService.getAllConfigs(pageable));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> getAllConfigs() {
+        return ResponseEntity.ok(systemConfigService.getAllConfigs());
     }
 
-    @GetMapping("/category/{category}")
-    public ResponseEntity<Map<String, String>> getConfigsByCategory(
-        @PathVariable String category
-    ) {
-        return ResponseEntity.ok(configService.getConfigsByCategory(category));
+    @Operation(summary = "初始化默认配置", description = "初始化系统默认配置")
+    @PostMapping("/init")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> initDefaultConfigs() {
+        systemConfigService.initDefaultConfigs();
+        return ResponseEntity.ok().build();
     }
 } 

@@ -8,9 +8,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "orthanc")
 public class OrthancConfig {
-    private String serverUrl;
+    private String url;
     private String username;
     private String password;
-    private int connectionTimeout;
-    private int readTimeout;
+    private Integer maxConnections;
+    private Integer connectionTimeout;
+    private Integer readTimeout;
+    private Boolean compression;
+    private String storageDirectory;
 } 

@@ -29,13 +29,13 @@ public class User {
     private String name;
     private String phone;
     private String department;
-    private Boolean enabled = true;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", 
-        joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
+
+    private Boolean enabled = true;
 
     @Column(name = "last_login_time")
     private LocalDateTime lastLoginTime;
