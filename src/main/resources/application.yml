@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:mysql://123.57.92.221:3306/medical_imaging
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+jwt:
+  secret: your-secret-key
+  expiration: 3600000
+  refresh-expiration: 86400000
+
+app:
+  storage:
+    location: ./uploads
+
+orthanc:
+  url: http://localhost:8042
+  username: orthanc
+  password: orthanc
+  max-connections: 20
+  connection-timeout: 5000
+  read-timeout: 30000
+  compression: true
+  storage-directory: /path/to/storage
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html 
