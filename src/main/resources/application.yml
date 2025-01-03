@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/medical_imaging
+    url: jdbc:mysql://123.57.92.221:3306/medical_imaging
     username: root
     password: root
   jpa:
@@ -22,7 +22,7 @@ app:
     location: ./uploads
 
 orthanc:
-  server-url: http://localhost:8042
+  server-url: http://123.57.92.221:8042
   username: orthanc
   password: orthanc
   connection-timeout: 5000
