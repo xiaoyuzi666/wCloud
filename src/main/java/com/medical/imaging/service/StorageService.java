@@ -9,5 +9,4 @@ public interface StorageService {
     Path load(String filename);
     void delete(String filename) throws IOException;
     void deleteAll();
-    void init();
 } 
