@@ -15,13 +15,13 @@ UserController changePassword 报红
 
 DicomServiceImpl public class DicomServiceImpl implements DicomService { void 报红
 
-ReportServiceImpl public class ReportServiceImpl implements ReportService { setStudyId setTitle setTitle getStudyId() getTitle() 报红
+ReportServiceImpl public class ReportServiceImpl implements ReportService { setStudyId setTitle() setTitle getStudyId() getTitle() 报红
 
 StudyServiceImpl studyRepository.getDailyStudyCount(startDate, endDate) description 报红
 
 SystemConfigServiceImpl public class SystemConfigServiceImpl implements SystemConfigService { key 报红
 
-UserServiceImpl public class UserServiceImpl implements UserService { isEnabled(), User user = userRepository.findById(userId)
+UserServiceImpl public class UserServiceImpl implements UserService { isEnabled(), User = userRepository.findById(userId)
 .orElseThrow(() -> new RuntimeException("User not found"));
 ser user = userRepository.findById(userId)
 .orElseThrow(() -> new RuntimeException("User not found"));
