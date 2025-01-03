@@ -11,7 +11,7 @@ ReportController generateReport getReportsByStudy 报红
 
 SystemConfigController getConfigValue setConfigValue initializeDefaultConfigs(); pageable getConfigsByCategory 报红
 
-UserController changePassword 报红
+UserController ch8angePassword 报红
 
 DicomServiceImpl public class DicomServiceImpl implements DicomService { void 报红
 
