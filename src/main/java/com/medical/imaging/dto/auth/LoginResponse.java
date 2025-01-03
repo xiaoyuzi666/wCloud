@@ -1,5 +1,6 @@
 package com.medical.imaging.dto.auth;
 
+import com.medical.imaging.dto.user.UserDTO;
 import lombok.Builder;
 import lombok.Data;
 

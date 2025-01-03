@@ -2,6 +2,7 @@ package com.medical.imaging.repository;
 
 import com.medical.imaging.entity.BackupTask;
 import com.medical.imaging.enums.BackupStatus;
+import com.medical.imaging.enums.BackupType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -25,7 +26,7 @@ public interface BackupTaskRepository extends JpaRepository<BackupTask, String> 
     Long calculateTotalStorageUsed();
 
     @Query("SELECT b.type, COUNT(b) FROM BackupTask b GROUP BY b.type")
-    Map<String, Long> countByBackupType();
+    Map<BackupType, Long> countByBackupType();
 
     @Query("SELECT FUNCTION('DATE_FORMAT', b.startTime, '%Y-%m'), SUM(b.totalSize) " +
            "FROM BackupTask b " +

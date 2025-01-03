@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid verification code");
         }
 
-        User user = userRepository.findByEmail(request.getEmail())
+        com.medical.imaging.entity.User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
