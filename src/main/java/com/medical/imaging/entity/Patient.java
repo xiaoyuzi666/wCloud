@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -20,11 +22,19 @@ public class Patient {
     private String patientId;
 
     private String name;
+    
+    @Column(name = "birth_date")
     private LocalDate birthDate;
-    private String gender;
+    
+    private String sex;
     private String address;
     private String phone;
-    private String email;
+    
+    @Column(name = "medical_record_number")
+    private String medicalRecordNumber;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
+    private List<Study> studies = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -33,4 +43,10 @@ public class Patient {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
 } 

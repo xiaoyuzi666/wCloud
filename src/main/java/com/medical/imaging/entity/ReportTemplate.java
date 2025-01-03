@@ -15,26 +15,19 @@ public class ReportTemplate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
-
     private String description;
+    private String modality;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
-
-    private String category;
+    @Column(columnDefinition = "TEXT")
+    private String template;
 
     @Column(name = "is_default")
-    private boolean isDefault;
+    private Boolean isDefault = false;
 
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "created_by")
     private String createdBy;

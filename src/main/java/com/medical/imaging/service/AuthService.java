@@ -1,6 +1,6 @@
 package com.medical.imaging.service;
 
-import com.medical.imaging.dto.*;
+import com.medical.imaging.dto.auth.*;
 
 public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);

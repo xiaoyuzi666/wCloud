@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 @Data
 public class ContrastAdjustRequest {
-    @NotNull(message = "Contrast value cannot be null")
-    private Double contrast;
-    @NotNull(message = "Brightness value cannot be null")
-    private Double brightness;
-    private Boolean applyToSeries;
+    @NotNull(message = "Contrast factor cannot be null")
+    private Double factor;
 } 

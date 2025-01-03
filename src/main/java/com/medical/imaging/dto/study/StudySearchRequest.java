@@ -1,11 +1,13 @@
 package com.medical.imaging.dto.study;
 
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class StudySearchRequest {
     private String patientName;
     private String patientId;

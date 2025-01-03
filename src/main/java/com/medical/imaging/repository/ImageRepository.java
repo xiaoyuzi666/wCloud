@@ -9,14 +9,8 @@ import java.util.List;
 
 @Repository
 public interface ImageRepository extends JpaRepository<Image, String> {
-    List<Image> findBySeriesId(String seriesId);
-    List<Image> findByStudyId(String studyId);
+    List<Image> findBySeriesIdOrderByInstanceNumber(String seriesId);
     
-    @Query("SELECT i FROM Image i WHERE i.seriesId = :seriesId ORDER BY i.instanceNumber")
+    @Query("SELECT i FROM Image i WHERE i.seriesId = ?1 ORDER BY i.instanceNumber")
     List<Image> findBySeriesIdOrdered(String seriesId);
-    
-    boolean existsByInstanceId(String instanceId);
-    
-    @Query("SELECT COUNT(i) FROM Image i WHERE i.studyId = :studyId")
-    long countByStudyId(String studyId);
 } 

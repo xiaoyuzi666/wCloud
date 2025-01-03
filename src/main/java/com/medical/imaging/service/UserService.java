@@ -11,8 +11,7 @@ public interface UserService extends UserDetailsService {
     void deleteUser(Long userId);
     UserDTO getUser(Long userId);
     Page<UserDTO> getAllUsers(Pageable pageable);
-    void changePassword(Long userId, PasswordChangeRequest request);
-    void resetPassword(String email);
-    void enableUser(Long userId);
-    void disableUser(Long userId);
+    void updatePassword(Long userId, PasswordUpdateRequest request);
+    void toggleUserStatus(Long userId, boolean enabled);
+    void updateUserProfile(Long userId, UserProfileUpdateRequest request);
 }

@@ -10,10 +10,9 @@ public class ReportTemplateDTO {
     private Long id;
     private String name;
     private String description;
-    private String content;
-    private String category;
-    private boolean isDefault;
+    private String modality;
+    private String template;
+    private Boolean isDefault;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private String createdBy;
 } 

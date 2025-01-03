@@ -1,15 +1,11 @@
 package com.medical.imaging.dto.image;
 
-import lombok.Data;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ImageDTO {
     private String instanceId;
     private String seriesId;

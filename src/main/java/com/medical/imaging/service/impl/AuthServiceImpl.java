@@ -1,29 +1,35 @@
 package com.medical.imaging.service.impl;
 
-import com.medical.imaging.dto.*;
-import com.medical.imaging.model.User;
-import com.medical.imaging.service.AuthService;
-import com.medical.imaging.security.JwtUtil;
+import com.medical.imaging.dto.auth.*;
+import com.medical.imaging.entity.User;
 import com.medical.imaging.repository.UserRepository;
-import com.medical.imaging.service.UserService;
+import com.medical.imaging.security.JwtUtil;
+import com.medical.imaging.service.AuthService;
+import com.medical.imaging.service.EmailService;
+import com.medical.imaging.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Override
+    @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -32,56 +38,67 @@ public class AuthServiceImpl implements AuthService {
             )
         );
 
-        final UserDetails userDetails = userService.loadUserByUsername(loginRequest.getUsername());
-        final String token = jwtUtil.generateToken(userDetails);
-        final String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+            .orElseThrow(() -> new BusinessException("User not found"));
 
-        return new LoginResponse(token, refreshToken);
+        user.setLastLoginTime(LocalDateTime.now());
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(toUserDetails(user));
+        String refreshToken = jwtUtil.generateRefreshToken(toUserDetails(user));
+
+        return LoginResponse.builder()
+            .token(token)
+            .refreshToken(refreshToken)
+            .tokenType("Bearer")
+            .expiresIn(3600L)
+            .user(toUserProfileResponse(user))
+            .build();
     }
 
     @Override
-    public void register(RegisterRequest registerRequest) {
-        // 检查用户是否已存在
-        if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+    @Transactional
+    public void register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException("Username already exists");
         }
 
-        // 创建新用户
         User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setEmail(registerRequest.getEmail());
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+        user.setDepartment(request.getDepartment());
+        user.setRoles(new HashSet<>(request.getRole() != null ? 
+            Set.of(request.getRole()) : Set.of("ROLE_USER")));
+
         userRepository.save(user);
     }
 
     @Override
+    @Transactional
     public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new BusinessException("User not found"));
+
         // 验证验证码
-        if (!verifyCode(request.getEmail(), request.getVerificationCode())) {
-            throw new RuntimeException("Invalid verification code");
+        if (!verifyResetCode(request.getEmail(), request.getVerificationCode())) {
+            throw new BusinessException("Invalid verification code");
         }
 
-        com.medical.imaging.entity.User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 
     @Override
+    @Transactional
     public void changePassword(String token, ChangePasswordRequest request) {
         String username = jwtUtil.extractUsername(token.substring(7));
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new BusinessException("User not found"));
 
-        // 验证旧密码
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid old password");
-        }
-
-        // 验证新密码确认
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Passwords don't match");
+            throw new BusinessException("Invalid old password");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -90,7 +107,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String token) {
-        // 将token加入黑名单
         jwtUtil.invalidateToken(token.substring(7));
     }
 
@@ -98,39 +114,76 @@ public class AuthServiceImpl implements AuthService {
     public UserProfileResponse getUserProfile(String token) {
         String username = jwtUtil.extractUsername(token.substring(7));
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new BusinessException("User not found"));
 
-        return new UserProfileResponse(
-            user.getUsername(),
-            user.getEmail(),
-            user.getPhone(),
-            user.getDepartment()
-        );
+        return toUserProfileResponse(user);
     }
 
     @Override
+    @Transactional
     public void updateUserProfile(String token, UpdateProfileRequest request) {
         String username = jwtUtil.extractUsername(token.substring(7));
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new BusinessException("User not found"));
 
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
-        user.setDepartment(request.getDepartment());
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getDepartment() != null) {
+            user.setDepartment(request.getDepartment());
+        }
+
         userRepository.save(user);
     }
 
     @Override
     public TokenResponse refreshToken(RefreshTokenRequest request) {
         String username = jwtUtil.extractUsernameFromRefreshToken(request.getRefreshToken());
-        UserDetails userDetails = userService.loadUserByUsername(username);
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new BusinessException("User not found"));
+
+        String newToken = jwtUtil.generateToken(toUserDetails(user));
         
-        String newToken = jwtUtil.generateToken(userDetails);
-        return new TokenResponse(newToken);
+        return TokenResponse.builder()
+            .token(newToken)
+            .tokenType("Bearer")
+            .expiresIn(3600L)
+            .build();
     }
 
-    private boolean verifyCode(String email, String code) {
-        // 实现验证码验证逻辑
-        return true; // 临时返回
+    private UserDetails toUserDetails(User user) {
+        return org.springframework.security.core.userdetails.User
+            .withUsername(user.getUsername())
+            .password(user.getPassword())
+            .authorities(user.getRoles().toArray(new String[0]))
+            .accountExpired(false)
+            .accountLocked(false)
+            .credentialsExpired(false)
+            .disabled(!user.getEnabled())
+            .build();
+    }
+
+    private UserProfileResponse toUserProfileResponse(User user) {
+        return UserProfileResponse.builder()
+            .id(user.getId())
+            .username(user.getUsername())
+            .email(user.getEmail())
+            .name(user.getName())
+            .department(user.getDepartment())
+            .roles(user.getRoles())
+            .lastLoginTime(user.getLastLoginTime())
+            .enabled(user.getEnabled())
+            .build();
+    }
+
+    private boolean verifyResetCode(String email, String code) {
+        // TODO: 实现验证码验证逻辑
+        return true;
     }
 } 

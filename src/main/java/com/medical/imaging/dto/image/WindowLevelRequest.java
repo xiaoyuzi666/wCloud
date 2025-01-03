@@ -10,6 +10,4 @@ public class WindowLevelRequest {
     
     @NotNull(message = "Window center cannot be null")
     private Integer windowCenter;
-    
-    private String preset;
 } 

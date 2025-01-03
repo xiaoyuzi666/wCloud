@@ -22,6 +22,7 @@ public class UserCreateRequest {
     private String email;
 
     private String name;
+    private String phone;
     private String department;
     private Set<String> roles;
 } 

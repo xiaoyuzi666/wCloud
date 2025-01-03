@@ -15,21 +15,23 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "study_id", nullable = false)
-    private Long studyId;
-
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id", nullable = false)
+    private Study study;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(columnDefinition = "TEXT")
+    private String status;
     private String conclusion;
+    private String findings;
+    private String recommendation;
 
     @Column(name = "doctor_name")
     private String doctorName;
 
-    private String status;
+    @Column(name = "template_id")
+    private Long templateId;
 
     @CreationTimestamp
     @Column(name = "created_at")

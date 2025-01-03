@@ -38,7 +38,7 @@ public class BackupController {
     @PostMapping
     public ResponseEntity<BackupResult> createBackup(
         @Parameter(description = "Backup configuration")
-        @RequestBody BackupRequest request
+        @Valid @RequestBody BackupRequest request
     ) {
         return ResponseEntity.ok(backupService.createBackup(request));
     }

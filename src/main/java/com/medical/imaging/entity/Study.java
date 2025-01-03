@@ -6,6 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -31,6 +33,21 @@ public class Study {
     private String description;
     private String modality;
     private String status;
+
+    @Column(name = "referring_physician")
+    private String referringPhysician;
+
+    @Column(name = "study_description")
+    private String studyDescription;
+
+    @Column(name = "number_of_series")
+    private Integer numberOfSeries;
+
+    @Column(name = "number_of_instances")
+    private Integer numberOfInstances;
+
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
+    private List<Report> reports = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at")

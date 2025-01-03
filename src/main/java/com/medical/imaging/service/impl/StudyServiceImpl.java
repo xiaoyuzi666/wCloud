@@ -1,10 +1,10 @@
 package com.medical.imaging.service.impl;
 
-import com.medical.imaging.model.Patient;
-import com.medical.imaging.model.Study;
+import com.medical.imaging.dto.study.*;
+import com.medical.imaging.entity.Study;
 import com.medical.imaging.repository.StudyRepository;
 import com.medical.imaging.service.StudyService;
-import jakarta.persistence.criteria.Join;
+import com.medical.imaging.exception.ResourceNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,9 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,78 +24,94 @@ public class StudyServiceImpl implements StudyService {
     private final StudyRepository studyRepository;
 
     @Override
-    public Page<Study> searchStudies(
-            String patientName, 
-            String patientId,
-            LocalDateTime startDate, 
-            LocalDateTime endDate, 
-            Pageable pageable) {
-        
+    public Page<StudyDTO> searchStudies(StudySearchRequest request, Pageable pageable) {
         Specification<Study> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (patientName != null && !patientName.isEmpty()) {
-                Join<Study, Patient> patientJoin = root.join("patient");
-                predicates.add(cb.like(cb.lower(patientJoin.get("name")), 
-                    "%" + patientName.toLowerCase() + "%"));
+            if (request.getPatientName() != null) {
+                predicates.add(cb.like(
+                    root.get("patient").get("name"),
+                    "%" + request.getPatientName() + "%"
+                ));
             }
-            
-            if (patientId != null && !patientId.isEmpty()) {
-                Join<Study, Patient> patientJoin = root.join("patient");
-                predicates.add(cb.like(patientJoin.get("patientId"), 
-                    "%" + patientId + "%"));
+
+            if (request.getPatientId() != null) {
+                predicates.add(cb.equal(
+                    root.get("patient").get("patientId"),
+                    request.getPatientId()
+                ));
             }
-            
-            if (startDate != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("studyDate"), startDate));
+
+            if (request.getStartDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                    root.get("studyDate"),
+                    request.getStartDate()
+                ));
             }
-            
-            if (endDate != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("studyDate"), endDate));
+
+            if (request.getEndDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(
+                    root.get("studyDate"),
+                    request.getEndDate()
+                ));
             }
-            
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        
-        return studyRepository.findAll(spec, pageable);
+
+        return studyRepository.findAll(spec, pageable)
+            .map(this::convertToDTO);
     }
 
     @Override
-    public Study getStudy(Long id) {
-        return studyRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Study not found"));
+    public StudyDTO getStudy(Long id) {
+        Study study = studyRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Study not found"));
+        return convertToDTO(study);
     }
 
     @Override
     @Transactional
     public void deleteStudy(Long id) {
+        if (!studyRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Study not found");
+        }
         studyRepository.deleteById(id);
     }
 
     @Override
-    public List<?> getStudySeries(Long studyId) {
-        Study study = getStudy(studyId);
-        // 调用Orthanc API获取序列信息
-        // TODO: 实现与Orthanc的集成
-        return new ArrayList<>();
+    public Page<SeriesDTO> getStudySeries(Long studyId, Pageable pageable) {
+        Study study = studyRepository.findById(studyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Study not found"));
+        // TODO: Implement series retrieval logic
+        return Page.empty();
     }
 
     @Override
-    public Map<String, Object> getStatistics(LocalDateTime startDate, LocalDateTime endDate) {
-        Map<String, Object> stats = new HashMap<>();
-        
-        // 获取研究总数
-        long totalStudies = studyRepository.countByStudyDateBetween(startDate, endDate);
-        stats.put("totalStudies", totalStudies);
-        
-        // 获取每天的研究数量
-        List<Object[]> dailyStats = studyRepository.getDailyStudyCount(startDate, endDate);
-        stats.put("dailyStats", dailyStats);
-        
-        // 获取每个患者的研究数量
-        List<Object[]> patientStats = studyRepository.getStudyCountByPatient(startDate, endDate);
-        stats.put("patientStats", patientStats);
-        
-        return stats;
+    public StudyStatisticsDTO getStatistics(LocalDateTime startDate, LocalDateTime endDate) {
+        return StudyStatisticsDTO.builder()
+            .totalStudies(studyRepository.countByStudyDateBetween(startDate, endDate))
+            .studiesByDay(studyRepository.getDailyStudyCount(startDate, endDate))
+            .studiesByPatient(studyRepository.getStudyCountByPatient(startDate, endDate))
+            .build();
+    }
+
+    private StudyDTO convertToDTO(Study study) {
+        return StudyDTO.builder()
+            .id(study.getId())
+            .patientId(study.getPatient().getPatientId())
+            .patientName(study.getPatient().getName())
+            .studyInstanceUid(study.getStudyInstanceUid())
+            .accessionNumber(study.getAccessionNumber())
+            .studyDate(study.getStudyDate())
+            .description(study.getDescription())
+            .modality(study.getModality())
+            .status(study.getStatus())
+            .referringPhysician(study.getReferringPhysician())
+            .numberOfSeries(study.getNumberOfSeries())
+            .numberOfInstances(study.getNumberOfInstances())
+            .createdAt(study.getCreatedAt())
+            .updatedAt(study.getUpdatedAt())
+            .build();
     }
 } 

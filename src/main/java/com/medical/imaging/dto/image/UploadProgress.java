@@ -5,10 +5,13 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ImageUploadResult {
+public class UploadProgress {
     private String uploadId;
-    private String instanceId;
     private String status;
     private Integer progress;
     private String message;
+    private Long processedBytes;
+    private Long totalBytes;
+    private LocalDateTime startTime;
+    private LocalDateTime estimatedCompletionTime;
 } 

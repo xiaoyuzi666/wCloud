@@ -9,11 +9,13 @@ import java.time.LocalDateTime;
 public class ReportDTO {
     private Long id;
     private Long studyId;
-    private String title;
     private String content;
-    private String conclusion;
-    private String doctorName;
     private String status;
+    private String conclusion;
+    private String findings;
+    private String recommendation;
+    private String doctorName;
+    private Long templateId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;

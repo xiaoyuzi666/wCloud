@@ -5,6 +5,7 @@ import com.medical.imaging.service.StudyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,17 +31,21 @@ public class StudyController {
             @Parameter(description = "患者ID") 
             @RequestParam(required = false) String patientId,
             @Parameter(description = "开始日期") 
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
-                LocalDateTime startDate,
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @Parameter(description = "结束日期") 
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
-                LocalDateTime endDate,
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @Parameter(description = "分页参数")
             Pageable pageable) {
-        StudySearchRequest request = new StudySearchRequest();
-        request.setPatientName(patientName);
-        request.setPatientId(patientId);
-        request.setStartDate(startDate);
-        request.setEndDate(endDate);
+        
+        StudySearchRequest request = StudySearchRequest.builder()
+            .patientName(patientName)
+            .patientId(patientId)
+            .startDate(startDate)
+            .endDate(endDate)
+            .build();
+            
         return ResponseEntity.ok(studyService.searchStudies(request, pageable));
     }
 
@@ -64,10 +69,10 @@ public class StudyController {
 
     @GetMapping("/statistics")
     public ResponseEntity<StudyStatisticsDTO> getStudyStatistics(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
-                LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
-                LocalDateTime endDate) {
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return ResponseEntity.ok(studyService.getStatistics(startDate, endDate));
     }
-} 
+}
