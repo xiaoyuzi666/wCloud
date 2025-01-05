@@ -14,8 +14,13 @@ import org.dcm4che3.data.Tag;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -28,7 +33,7 @@ public class DicomServiceImpl implements DicomService {
 
     @Override
     @Transactional
-    public void processDicomFile(MultipartFile file) throws IOException {
+    public Map<String, Object> processDicomFile(MultipartFile file) throws IOException {
         Attributes attrs = DicomUtils.readDicomAttributes(file.getInputStream());
         
         // 处理患者信息
@@ -43,6 +48,23 @@ public class DicomServiceImpl implements DicomService {
         
         // 上传到Orthanc服务器
         uploadToOrthanc(file);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("patientId", patient.getId());
+        result.put("studyId", study.getId());
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getStudyDetails(String studyId) throws Exception {
+        // 实现获取检查详情的逻辑
+        return new HashMap<>();
+    }
+
+    @Override
+    public void processMultipleDicomFiles(List<MultipartFile> files, String uploadId,
+            Function<String, SseEmitter> emitterSupplier) throws Exception {
+        // 实现批量处理DICOM文件的逻辑
     }
 
     private Patient processPatientInfo(Attributes attrs) {

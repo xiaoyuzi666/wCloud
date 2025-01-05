@@ -7,11 +7,9 @@ import java.util.Set;
 
 @Data
 public class UserUpdateRequest {
-    private String name;
-    
     @Email(message = "Invalid email format")
     private String email;
-    
+    private String name;
     private String phone;
     private String department;
     private Set<String> roles;
